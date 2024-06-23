@@ -67,9 +67,6 @@ func main() {
 
 	executablePath := (*executable)[:pathIndex]
 	args := strings.Fields((*executable)[pathIndex:])
-	fmt.Println("Executable :", *executable)
-	fmt.Println("Executable path:", executablePath)
-	fmt.Println("Arguments:", args)
 
 	pid, _, err := syscall.StartProcess(executablePath, args, &syscall.ProcAttr{
 		Env: env,
