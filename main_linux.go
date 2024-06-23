@@ -18,6 +18,8 @@ func main() {
 
 	flag.Parse()
 
+	fmt.Println("Executable:", *executable)
+
 	if *executable == "" {
 		fmt.Println("Executable path is required")
 		os.Exit(1)

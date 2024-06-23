@@ -33,6 +33,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	fmt.Println("Executable:", *executable)
+
 	switch *service {
 	case "catbox":
 		{
