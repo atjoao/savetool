@@ -376,16 +376,16 @@ func Compress() error {
 			return fmt.Errorf("error walking file path: %w", err)
 		}
 
-		// Skip the root directory itself
 		if filePath == savePath {
 			return nil
 		}
 
-		// Create the proper file header
-		relativePath := filePath[len(savePath)+1:] // +1 to remove the leading slash
+		relativePath, err := filepath.Rel(savePath, filePath)
+		if err != nil {
+			return fmt.Errorf("error getting relative path: %w", err)
+		}
 
 		if info.IsDir() {
-			// If it's a directory, just add a folder entry to the zip
 			_, err := zipWriter.Create(relativePath + "/")
 			if err != nil {
 				return fmt.Errorf("error creating directory in zip: %w", err)
@@ -393,7 +393,6 @@ func Compress() error {
 			return nil
 		}
 
-		// For files, add them to the zip
 		fileToZip, err := os.Open(filePath)
 		if err != nil {
 			return fmt.Errorf("error opening file to zip: %w", err)
