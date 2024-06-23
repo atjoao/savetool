@@ -61,11 +61,14 @@ func main() {
 		}
 	}
 
-	// remember to support emulators
 	env := os.Environ()
-	args := []string{}
+	path := "/home/deck/.local/share/Steam/ubuntu12_32/reaper"
+	pathIndex := strings.Index(*executable, path) + len(path)
 
-	pid, _, err := syscall.StartProcess(*executable, args, &syscall.ProcAttr{
+	executablePath := (*executable)[:pathIndex]
+	args := strings.Fields((*executable)[pathIndex:])
+
+	pid, _, err := syscall.StartProcess(executablePath, args, &syscall.ProcAttr{
 		Env: env,
 		Files: []uintptr{
 			uintptr(syscall.Stdin),

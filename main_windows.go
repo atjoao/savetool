@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"savetool/config"
 	"savetool/services/catbox"
 	"strings"
@@ -40,7 +41,7 @@ func main() {
 		{
 			config := config.CatboxConfig{}
 			fmt.Println("Service:", *service)
-			catboxConfig := strings.Split(*catboxPtr, ",")
+			catboxConfig := strings.Split(*catboxPtr, "+")
 			if len(catboxConfig) != 2 {
 				fmt.Println("Invalid catbox configuration")
 				fmt.Println("Example configuration: -catbox=userhash+albumId")
@@ -61,12 +62,19 @@ func main() {
 		}
 	}
 
-	// remember to support emulators
-
 	env := os.Environ()
-	args := []string{}
 
-	_, handler, err := syscall.StartProcess(*executable, args, &syscall.ProcAttr{
+	ext := filepath.Ext(*executable)
+	if ext != ".exe" && ext != ".lnk" {
+		fmt.Println("Error: executable path must end with .exe or .lnk")
+		os.Exit(1)
+	}
+
+	exeIndex := strings.LastIndex(*executable, ext) + len(ext)
+	executablePath := (*executable)[:exeIndex]
+	args := strings.Fields((*executable)[exeIndex:])
+
+	_, handler, err := syscall.StartProcess(executablePath, args, &syscall.ProcAttr{
 		Env: env,
 		Files: []uintptr{
 			uintptr(syscall.Stdin),
