@@ -1,0 +1,141 @@
+package catbox
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/cookiejar"
+	"runtime"
+	"savetool/config"
+	"strings"
+)
+
+var (
+	baseURL  = "https://catbox.moe/"
+	creds    = []string{}
+	userhash = ""
+	client   *http.Client
+)
+
+func init() {
+	jar, _ := cookiejar.New(nil)
+	client = &http.Client{
+		Jar: jar,
+	}
+}
+
+func CreateSession(user, pass string) int {
+	// make login
+	requestURL := baseURL + "user/dologin.php"
+
+	formData := strings.NewReader(fmt.Sprintf(
+		"username=%s&password=%s&submit=Login",
+		user, pass,
+	))
+
+	req, err := http.NewRequest("POST", requestURL, formData)
+	req.Header.Set("Content-Type", "multipart/form-data")
+	if err != nil {
+		fmt.Println("Error creating login request:", err)
+		return 0
+	}
+
+	result, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error making login request:", err)
+		return 0
+	}
+
+	defer result.Body.Close()
+
+	body, err := io.ReadAll(result.Body)
+	if err != nil {
+		fmt.Println("Error reading response body:", err)
+		return 0
+	}
+
+	if strings.Contains(string(body), "<div class='notetiny' style='border-color: red;'>") {
+		return 0
+	}
+
+	fmt.Println("Login result: ", client.Jar.Cookies(req.URL)[0].Value)
+
+	return 1
+}
+
+func GetUserHash() {
+	request := baseURL + "user/manage.php"
+	req, err := http.NewRequest("GET", request, nil)
+	if err != nil {
+		fmt.Println("Error getting user hash:", err)
+		return
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error getting user hash:", err)
+		return
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		fmt.Println("Request failed with status code:", resp.StatusCode)
+		return
+	}
+
+	// get body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response body:", err)
+		return
+	}
+
+	fmt.Println("User hash response:", string(body))
+
+	fmt.Println("User hash response received.")
+
+}
+
+func Upload() {
+	// Function implementation
+}
+
+func CreateFolder() {
+	// Function implementation
+}
+
+func CheckForFolder() {
+
+}
+
+func LastOpen(user string, config *config.ConfigStr) {
+	creds = append(creds, strings.Split(user, "\n")...)
+	// get executable name via the path
+	var executable []string
+
+	if runtime.GOOS == "windows" {
+		executable = strings.Split(config.Path, "\\")
+	} else {
+		executable = strings.Split(config.Path, "/")
+	}
+
+	fmt.Println("Executable name:", executable[len(executable)-1])
+	if len(creds) > 0 {
+		fmt.Println("User:", creds[0])
+		fmt.Println("Pass:", creds[1])
+		result := CreateSession(creds[0], creds[1])
+		if result == 0 {
+			fmt.Println("User: Login failed")
+		}
+		if result == 1 {
+			fmt.Println("User: Login successful")
+			GetUserHash()
+		}
+	} else {
+		fmt.Println("User: No users found")
+	}
+
+	fmt.Println("Config :", config)
+
+}
