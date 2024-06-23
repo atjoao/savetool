@@ -41,5 +41,5 @@ jobs:
     - name: Upload Windows x86_64 binary
       uses: actions/upload-artifact@v3
       with:
-        name: ffviewer-windows-x86_64
+        name: savetool-windows-x86_64
         path: ./bin/win-64/savetool.exe
