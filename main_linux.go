@@ -40,7 +40,7 @@ func main() {
 		{
 			config := config.CatboxConfig{}
 			fmt.Println("Service:", *service)
-			catboxConfig := strings.Split(*catboxPtr, ",")
+			catboxConfig := strings.Split(*catboxPtr, "+")
 			if len(catboxConfig) != 2 {
 				fmt.Println("Invalid catbox configuration")
 				fmt.Println("Example configuration: -catbox=userhash+albumId")
