@@ -7,6 +7,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"savetool/config"
 	"savetool/helper"
@@ -110,6 +111,20 @@ func Retrieve(cfg *config.CatboxConfig) int {
 	albumID = cfg.AlbumID
 	savePath = cfg.SavePath
 	keepSaves = cfg.KeepSaves
+
+	if keepSaves {
+		fmt.Println("Creating backup...")
+		backupPath := "saves/"
+		err := os.MkdirAll(filepath.Dir(backupPath), 0755)
+		if err != nil {
+			fmt.Println("Error creating backup directory: %w", err)
+		}
+
+		err = helper.Compress(fmt.Sprintf("saves/%d.zip", time.Now().Unix()), savePath, keepSaves)
+		if err != nil {
+			fmt.Println("Error compressing files:", err)
+		}
+	}
 
 	client := &http.Client{}
 	fmt.Println("Retrieving from Catbox...")
@@ -271,7 +286,7 @@ func DownloadSaveZip() {
 		return
 	}
 
-	err = os.WriteFile("latest_save.zip", resp, 0644)
+	err = os.WriteFile("latest_save.zip", resp, os.ModePerm)
 	if err != nil {
 		fmt.Println("Error writing zip file:", err)
 		return

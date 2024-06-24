@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"time"
 )
 
 func Unzip(zipname string, savePath string) error {
@@ -92,6 +91,7 @@ func Compress(zipname string, savePath string, keepSave bool) error {
 		if err != nil {
 			return fmt.Errorf("error opening file to zip: %w", err)
 		}
+
 		defer fileToZip.Close()
 
 		w1, err := zipWriter.Create(relativePath)
@@ -105,32 +105,6 @@ func Compress(zipname string, savePath string, keepSave bool) error {
 
 		return nil
 	})
-
-	if keepSave {
-		backupPath := "gamesaves/"
-		err = os.MkdirAll(filepath.Dir(backupPath), 0755)
-		if err != nil {
-			return fmt.Errorf("error creating backup directory: %w", err)
-		}
-
-		sourceFile, err := os.Open(zipname)
-		if err != nil {
-			return fmt.Errorf("error opening source zip file: %w", err)
-		}
-
-		defer sourceFile.Close()
-
-		destFile, err := os.Create(fmt.Sprintf("gamesaves/%d.zip", time.Now().Unix()))
-		if err != nil {
-			return fmt.Errorf("error creating backup zip file: %w", err)
-		}
-		defer destFile.Close()
-
-		_, err = io.Copy(destFile, sourceFile)
-		if err != nil {
-			return fmt.Errorf("error copying zip file to backup: %w", err)
-		}
-	}
 
 	if err != nil {
 		return err
