@@ -6,6 +6,7 @@ Exemplo na steam com catbox como serviço
 - Abrir propriedades de jogo
 - Definir opções de lançamento
     ```
-    savetool -service catbox -catbox <userhash>+<albumid> -executable %COMMAND% -saves <pasta de save do jogo>
+    savetool -service catbox -catbox <userhash>+<albumid> -saves <pasta de save do jogo> -executable %COMMAND%
     ```
+- Este tem de ficar em ordem de acordo com o exemplo para prevenir erros
 
