@@ -289,6 +289,7 @@ func DownloadSaveZip() {
 
 	os.Remove("latest_save.zip")
 }
+
 func CompressAndUpload() {
 	fmt.Println("Compressing files...")
 	err := helper.Compress("latest_save.zip", savePath, keepSaves)
