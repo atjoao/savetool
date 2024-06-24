@@ -82,7 +82,8 @@ func main() {
 		executablePath = (*executable)[:exeIndex]
 		args = strings.Fields((*executable)[exeIndex:])
 	} else {
-		// TODO:::I HAVE NOT CHECKED IF THIS WORKS !!
+		executablePath = *executable
+		args = strings.Fields(*executable)
 	}
 
 	proc, err := os.StartProcess(executablePath, args, &os.ProcAttr{
