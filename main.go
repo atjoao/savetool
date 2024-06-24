@@ -5,16 +5,17 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"savetool/config"
 	"savetool/services/catbox"
 	"strings"
-	"syscall"
 )
 
 func main() {
 	executable := flag.String("executable", "", "Path to the executable + arguments")
 	saves := flag.String("saves", "", "Path to the saves folder")
 	service := flag.String("service", "", "Service name")
+	keepSaves := flag.Bool("kp", true, "Keep saves stored in game directory - game_dir/saves/<timestamp>-<albumId>.zip")
 	catboxPtr := flag.String("catbox", "", "Catbox configuration || mandatory depending on the service chosen")
 
 	flag.Parse()
@@ -51,6 +52,7 @@ func main() {
 			config.Userhash = catboxConfig[0]
 			config.AlbumID = catboxConfig[1]
 			config.SavePath = *saves
+			config.KeepSaves = *keepSaves
 			// 0 = error
 			// 1 = new files
 			catbox.Retrieve(&config)
@@ -64,22 +66,31 @@ func main() {
 
 	env := os.Environ()
 
-	ext := filepath.Ext(*executable)
-	if ext != ".exe" && ext != ".lnk" {
-		fmt.Println("Error: executable path must end with .exe or .lnk")
-		os.Exit(1)
+	var (
+		executablePath string
+		args           []string
+	)
+
+	if runtime.GOOS == "windows" {
+		ext := filepath.Ext(*executable)
+		if ext != ".exe" && ext != ".lnk" {
+			fmt.Println("Error: executable path must end with .exe or .lnk")
+			os.Exit(1)
+		}
+
+		exeIndex := strings.LastIndex(*executable, ext) + len(ext)
+		executablePath = (*executable)[:exeIndex]
+		args = strings.Fields((*executable)[exeIndex:])
+	} else {
+		// TODO:::I HAVE NOT CHECKED IF THIS WORKS !!
 	}
 
-	exeIndex := strings.LastIndex(*executable, ext) + len(ext)
-	executablePath := (*executable)[:exeIndex]
-	args := strings.Fields((*executable)[exeIndex:])
-
-	_, handler, err := syscall.StartProcess(executablePath, args, &syscall.ProcAttr{
+	proc, err := os.StartProcess(executablePath, args, &os.ProcAttr{
 		Env: env,
-		Files: []uintptr{
-			uintptr(syscall.Stdin),
-			uintptr(syscall.Stdout),
-			uintptr(syscall.Stderr),
+		Files: []*os.File{
+			os.Stdin,
+			os.Stdout,
+			os.Stderr,
 		},
 	})
 
@@ -87,10 +98,7 @@ func main() {
 		fmt.Println("Error starting process:", err)
 	}
 
-	_, err = syscall.WaitForSingleObject(syscall.Handle(handler), syscall.INFINITE)
-	if err != nil {
-		fmt.Println("Error waiting for process to exit:", err)
-	}
+	proc.Wait()
 
 	// compress and then upload
 	switch *service {
