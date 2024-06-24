@@ -86,6 +86,9 @@ func main() {
 		args = strings.Fields(*executable)
 	}
 
+	fmt.Println("Starting process:", executablePath)
+	fmt.Println("Arguments:", args)
+
 	proc, err := os.StartProcess(executablePath, args, &os.ProcAttr{
 		Env: env,
 		Files: []*os.File{
