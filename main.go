@@ -83,7 +83,7 @@ func main() {
 		args = strings.Fields((*executable)[exeIndex:])
 	} else {
 		executablePath = *executable
-		args = strings.Fields(*executable)
+		args = flag.Args()
 	}
 
 	fmt.Println("Starting process:", executablePath)
