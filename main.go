@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
 	"runtime"
 	"savetool/config"
 	"savetool/services/catbox"
@@ -72,15 +71,17 @@ func main() {
 	)
 
 	if runtime.GOOS == "windows" {
-		ext := filepath.Ext(*executable)
-		if ext != ".exe" && ext != ".lnk" {
+		exeIndex := strings.LastIndex(*executable, ".exe")
+		lnkIndex := strings.LastIndex(*executable, ".lnk")
+		lastIndex := max(exeIndex, lnkIndex)
+
+		if lastIndex == -1 {
 			fmt.Println("Error: executable path must end with .exe or .lnk")
 			os.Exit(1)
 		}
 
-		exeIndex := strings.LastIndex(*executable, ext) + len(ext)
-		executablePath = (*executable)[:exeIndex]
-		args = strings.Fields((*executable)[exeIndex:])
+		executablePath = (*executable)[:lastIndex+4]
+		args = strings.Fields((*executable)[lastIndex+4:])
 	} else {
 		executablePath = *executable
 		args = flag.Args()
