@@ -25,7 +25,8 @@ func Unzip(zipname string, savePath string) error {
 		}
 		defer rc.Close()
 
-		newFilePath := filepath.Join(savePath, f.Name)
+		normalizedFileName := filepath.FromSlash(f.Name)
+		newFilePath := filepath.Join(savePath, normalizedFileName)
 
 		if f.FileInfo().IsDir() {
 			err = os.MkdirAll(newFilePath, os.ModePerm)
