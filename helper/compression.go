@@ -11,48 +11,41 @@ import (
 func Unzip(zipname string, savePath string) error {
 	zipReader, err := zip.OpenReader(zipname)
 	if err != nil {
-		fmt.Println("Error opening zip file:", err)
-		return err
+		return fmt.Errorf("error opening zip file: %w", err)
 	}
 	defer zipReader.Close()
 
-	for k, f := range zipReader.File {
-		fmt.Printf("Unzipping %s:\n", f.Name)
-		rc, err := f.Open()
-		if err != nil {
-			fmt.Printf("Impossible to open file n°%d in archive: %s\n", k, err)
-			return err
-		}
-		defer rc.Close()
-
+	for _, f := range zipReader.File {
 		normalizedFileName := filepath.FromSlash(f.Name)
 		newFilePath := filepath.Join(savePath, normalizedFileName)
 
 		if f.FileInfo().IsDir() {
 			err = os.MkdirAll(newFilePath, os.ModePerm)
 			if err != nil {
-				fmt.Printf("Impossible to MkdirAll: %s\n", err)
-				return err
+				return fmt.Errorf("error creating directory: %w", err)
 			}
 			continue
 		}
 
 		if err = os.MkdirAll(filepath.Dir(newFilePath), os.ModePerm); err != nil {
-			fmt.Printf("Impossible to MkdirAll: %s\n", err)
-			return err
+			return fmt.Errorf("error creating directory for file: %w", err)
 		}
+
+		rc, err := f.Open()
+		if err != nil {
+			return fmt.Errorf("error opening file in zip: %w", err)
+		}
+		defer rc.Close()
 
 		uncompressedFile, err := os.Create(newFilePath)
 		if err != nil {
-			fmt.Printf("Impossible to create uncompressed file: %s\n", err)
-			return err
+			return fmt.Errorf("error creating uncompressed file: %w", err)
 		}
 		defer uncompressedFile.Close()
 
 		_, err = io.Copy(uncompressedFile, rc)
 		if err != nil {
-			fmt.Printf("Impossible to copy file n°%d: %s\n", k, err)
-			return err
+			return fmt.Errorf("error copying file content: %w", err)
 		}
 	}
 
@@ -83,6 +76,8 @@ func Compress(zipname string, savePath string, keepSave bool) error {
 		if err != nil {
 			return fmt.Errorf("error getting relative path: %w", err)
 		}
+
+		relativePath = filepath.ToSlash(relativePath)
 
 		if info.IsDir() {
 			_, err := zipWriter.Create(relativePath + "/")
