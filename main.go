@@ -4,22 +4,25 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"runtime"
 	"savetool/config"
 	"savetool/services/catbox"
 	"strings"
 )
 
 func main() {
-	executable := flag.String("executable", "", "Path to the executable + arguments")
+	// Define flags
 	saves := flag.String("saves", "", "Path to the saves folder")
 	service := flag.String("service", "", "Service name")
 	keepSaves := flag.Bool("kp", true, "Keep saves stored in game directory - game_dir/saves/<timestamp>-<albumId>.zip")
 	catboxPtr := flag.String("catbox", "", "Catbox configuration || mandatory depending on the service chosen")
 
+	// Parse flags
 	flag.Parse()
 
-	if *executable == "" {
+	// Get the executable and arguments from os.Args
+	executableArgs := parseExecutableArgs(os.Args)
+
+	if executableArgs.executable == "" {
 		fmt.Println("Executable path is required")
 		os.Exit(1)
 	}
@@ -34,63 +37,76 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("Executable:", *executable)
+	fmt.Println("Executable:", executableArgs.executable)
 
 	switch *service {
 	case "catbox":
-		{
-			config := config.CatboxConfig{}
-			fmt.Println("Service:", *service)
-			catboxConfig := strings.Split(*catboxPtr, "+")
-			if len(catboxConfig) != 2 {
-				fmt.Println("Invalid catbox configuration")
-				fmt.Println("Example configuration: -catbox=userhash+albumId")
-				return
-			}
-
-			config.Userhash = catboxConfig[0]
-			config.AlbumID = catboxConfig[1]
-			config.SavePath = *saves
-			config.KeepSaves = *keepSaves
-			// 0 = error
-			// 1 = new files
-			catbox.Retrieve(&config)
-		}
+		handleCatboxService(catboxPtr, saves, keepSaves)
 	default:
-		{
-			fmt.Println("Service not supported:", *service)
-			fmt.Println("Supported services: catbox")
-		}
+		fmt.Println("Service not supported:", *service)
+		fmt.Println("Supported services: catbox")
+		os.Exit(1)
 	}
 
-	env := os.Environ()
-
-	var (
-		executablePath string
-		args           []string
-	)
-
-	if runtime.GOOS == "windows" {
-		exeIndex := strings.LastIndex(*executable, ".exe")
-		lnkIndex := strings.LastIndex(*executable, ".lnk")
-		lastIndex := max(exeIndex, lnkIndex)
-
-		if lastIndex == -1 {
-			fmt.Println("Error: executable path must end with .exe or .lnk")
-			os.Exit(1)
-		}
-
-		executablePath = (*executable)[:lastIndex+4]
-		args = strings.Fields((*executable)[lastIndex+4:])
-	} else {
-		executablePath = *executable
-		args = flag.Args()
-	}
+	executablePath, args := executableArgs.executable, executableArgs.args
 
 	fmt.Println("Starting process:", executablePath)
 	fmt.Println("Arguments:", args)
 
-	proc, err := os.StartProcess(executablePath, args, &os.ProcAttr{
+	startProcess(executablePath, args)
+
+	// Compress and then upload
+	switch *service {
+	case "catbox":
+		catbox.CompressAndUpload()
+		fmt.Println("Done")
+		catbox.UploadLastFile("true")
+	default:
+		fmt.Println("Service not supported:", *service)
+	}
+}
+
+func handleCatboxService(catboxPtr, saves *string, keepSaves *bool) {
+	config := config.CatboxConfig{}
+	fmt.Println("Service: catbox")
+	catboxConfig := strings.Split(*catboxPtr, "+")
+	if len(catboxConfig) != 2 {
+		fmt.Println("Invalid catbox configuration")
+		fmt.Println("Example configuration: --catbox=userhash+albumId")
+		os.Exit(1)
+	}
+
+	config.Userhash = catboxConfig[0]
+	config.AlbumID = catboxConfig[1]
+	config.SavePath = *saves
+	config.KeepSaves = *keepSaves
+	// 0 = error
+	// 1 = new files
+	catbox.Retrieve(&config)
+}
+
+type executableArgs struct {
+	executable string
+	args       []string
+}
+
+func parseExecutableArgs(args []string) executableArgs {
+	var execArgs executableArgs
+	for i, arg := range args {
+		if arg == "--" {
+			if i+1 < len(args) {
+				execArgs.executable = args[i+1]
+				execArgs.args = args[i+2:]
+			}
+			return execArgs
+		}
+	}
+	return execArgs
+}
+
+func startProcess(executablePath string, args []string) {
+	env := os.Environ()
+	proc, err := os.StartProcess(executablePath, append([]string{executablePath}, args...), &os.ProcAttr{
 		Env: env,
 		Files: []*os.File{
 			os.Stdin,
@@ -101,22 +117,8 @@ func main() {
 
 	if err != nil {
 		fmt.Println("Error starting process:", err)
+		os.Exit(1)
 	}
 
 	proc.Wait()
-
-	// compress and then upload
-	switch *service {
-	case "catbox":
-		{
-			catbox.CompressAndUpload()
-			fmt.Println("Done")
-			catbox.UploadLastFile("true")
-		}
-	default:
-		{
-			fmt.Println("Service not supported:", *service)
-		}
-	}
-
 }
