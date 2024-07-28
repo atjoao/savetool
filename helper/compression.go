@@ -9,26 +9,26 @@ import (
 )
 
 func Unzip(zipname string, savePath string) error {
-	zip, err := zip.OpenReader(zipname)
+	zipReader, err := zip.OpenReader(zipname)
 	if err != nil {
 		fmt.Println("Error opening zip file:", err)
 		return err
 	}
+	defer zipReader.Close()
 
-	defer zip.Close()
-
-	for k, f := range zip.File {
+	for k, f := range zipReader.File {
 		fmt.Printf("Unzipping %s:\n", f.Name)
 		rc, err := f.Open()
 		if err != nil {
 			fmt.Printf("Impossible to open file n°%d in archive: %s\n", k, err)
 			return err
 		}
+		defer rc.Close()
 
-		newFilePath := fmt.Sprintf("%s/%s", savePath, f.Name)
+		newFilePath := filepath.Join(savePath, f.Name)
 
 		if f.FileInfo().IsDir() {
-			err = os.MkdirAll(newFilePath, os.ModeAppend)
+			err = os.MkdirAll(newFilePath, os.ModePerm)
 			if err != nil {
 				fmt.Printf("Impossible to MkdirAll: %s\n", err)
 				return err
@@ -36,12 +36,16 @@ func Unzip(zipname string, savePath string) error {
 			continue
 		}
 
+		if err = os.MkdirAll(filepath.Dir(newFilePath), os.ModePerm); err != nil {
+			fmt.Printf("Impossible to MkdirAll: %s\n", err)
+			return err
+		}
+
 		uncompressedFile, err := os.Create(newFilePath)
 		if err != nil {
 			fmt.Printf("Impossible to create uncompressed file: %s\n", err)
 			return err
 		}
-
 		defer uncompressedFile.Close()
 
 		_, err = io.Copy(uncompressedFile, rc)
