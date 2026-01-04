@@ -25,6 +25,13 @@ jobs:
       uses: actions/setup-go@v5
       with:
         go-version: 'stable'
+        cache: true
+
+    - name: Cache APT packages
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: build-essential libgtk-3-dev
+        version: 1.0
 
     - name: Install Linux dependencies
       run: |
@@ -33,6 +40,14 @@ jobs:
 
     - name: Setup Zig
       uses: goto-bus-stop/setup-zig@v2
+
+    - name: Cache Zig
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/zig
+        key: ${{ runner.os }}-zig-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-zig-
 
     - name: Build project for Windows x86_64
       run: |
