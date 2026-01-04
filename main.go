@@ -4,12 +4,22 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"savetool/config"
 	"savetool/services/catbox"
 	"strings"
 )
 
 func main() {
+	workDir, _ := os.Getwd()
+	logFile := filepath.Join(workDir, "savetool.log")
+	f, err := os.Create(logFile)
+	if err == nil {
+		defer f.Close()
+		os.Stdout = f
+		os.Stderr = f
+	}
+
 	// Define flags
 	saves := flag.String("saves", "", "Path to the saves folder")
 	service := flag.String("service", "", "Service name")
