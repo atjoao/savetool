@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"savetool/config"
@@ -72,7 +73,8 @@ func apiRequest(method, endpoint string, body io.Reader) (*http.Response, error)
 }
 
 func getFileSHA(filePath string) (string, error) {
-	endpoint := fmt.Sprintf("/repos/%s/contents/%s?ref=%s", repo, filePath, branch)
+	encodedPath := url.PathEscape(filePath)
+	endpoint := fmt.Sprintf("/repos/%s/contents/%s?ref=%s", repo, encodedPath, branch)
 	resp, err := apiRequest("GET", endpoint, nil)
 	if err != nil {
 		return "", err
@@ -116,7 +118,9 @@ func uploadFile(filePath string, content []byte, message string) error {
 		return fmt.Errorf("error marshaling request: %w", err)
 	}
 
-	endpoint := fmt.Sprintf("/repos/%s/contents/%s", repo, filePath)
+	encodedPath := url.PathEscape(filePath)
+	endpoint := fmt.Sprintf("/repos/%s/contents/%s", repo, encodedPath)
+	fmt.Println("Uploading file:", filePath)
 	resp, err := apiRequest("PUT", endpoint, bytes.NewReader(jsonBody))
 	if err != nil {
 		return err
@@ -132,7 +136,8 @@ func uploadFile(filePath string, content []byte, message string) error {
 }
 
 func downloadFile(filePath string) ([]byte, error) {
-	endpoint := fmt.Sprintf("/repos/%s/contents/%s?ref=%s", repo, filePath, branch)
+	encodedPath := url.PathEscape(filePath)
+	endpoint := fmt.Sprintf("/repos/%s/contents/%s?ref=%s", repo, encodedPath, branch)
 	resp, err := apiRequest("GET", endpoint, nil)
 	if err != nil {
 		return nil, err
