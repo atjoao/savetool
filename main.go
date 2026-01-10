@@ -7,24 +7,21 @@ import (
 	"path/filepath"
 	"savetool/config"
 	"savetool/services/catbox"
+	"savetool/services/github"
 	"strings"
 )
 
 func main() {
 	workDir, _ := os.Getwd()
 	logFile := filepath.Join(workDir, "savetool.log")
-	f, err := os.Create(logFile)
-	if err == nil {
-		defer f.Close()
-		os.Stdout = f
-		os.Stderr = f
-	}
 
 	// Define flags
 	saves := flag.String("saves", "", "Path to the saves folder")
-	service := flag.String("service", "", "Service name")
-	keepSaves := flag.Bool("kp", true, "Keep saves stored in game directory - game_dir/saves/<timestamp>-<albumId>.zip")
+	service := flag.String("service", "", "Service name (github / catbox)")
+	keepSaves := flag.Bool("kp", true, "Keep saves stored in game directory - game_dir/saves/<timestamp>.zip")
 	catboxPtr := flag.String("catbox", "", "Catbox configuration || mandatory depending on the service chosen")
+	githubPtr := flag.String("github", "", "GitHub configuration: token+repo+branch (branch optional) || mandatory depending on the service chosen")
+	gamePtr := flag.String("game", "", "Game name identifier (required for github)")
 
 	// Parse flags
 	flag.Parse()
@@ -47,14 +44,23 @@ func main() {
 		os.Exit(1)
 	}
 
+	f, err := os.Create(logFile)
+	if err == nil {
+		defer f.Close()
+		os.Stdout = f
+		os.Stderr = f
+	}
+
 	fmt.Println("Executable:", executableArgs.executable)
 
 	switch *service {
 	case "catbox":
 		handleCatboxService(catboxPtr, saves, keepSaves)
+	case "github":
+		handleGithubService(githubPtr, saves, keepSaves, gamePtr)
 	default:
 		fmt.Println("Service not supported:", *service)
-		fmt.Println("Supported services: catbox")
+		fmt.Println("Supported services: catbox, github")
 		os.Exit(1)
 	}
 
@@ -71,6 +77,10 @@ func main() {
 		catbox.CompressAndUpload()
 		fmt.Println("Done")
 		catbox.UploadLastFile("true")
+	case "github":
+		github.CompressAndUpload()
+		fmt.Println("Done")
+		github.UploadLastFile("true")
 	default:
 		fmt.Println("Service not supported:", *service)
 	}
@@ -93,6 +103,35 @@ func handleCatboxService(catboxPtr, saves *string, keepSaves *bool) {
 	// 0 = error
 	// 1 = new files
 	catbox.Retrieve(&config)
+}
+
+func handleGithubService(githubPtr, saves *string, keepSaves *bool, gamePtr *string) {
+	config := config.GitHubConfig{}
+	fmt.Println("Service: GitHub")
+	githubConfig := strings.Split(*githubPtr, "+")
+	if *gamePtr == "" {
+		fmt.Println("Game name is required")
+		os.Exit(1)
+	}
+	if len(githubConfig) < 2 || len(githubConfig) > 3 {
+		fmt.Println("Invalid GitHub configuration")
+		fmt.Println("Example configuration: --github=token+username/repo+branch")
+		fmt.Println("Branch is optional, defaults to 'main'")
+		os.Exit(1)
+	}
+
+	config.Token = githubConfig[0]
+	config.Repo = githubConfig[1]
+	if len(githubConfig) == 3 {
+		config.Branch = githubConfig[2]
+	} else {
+		config.Branch = "main"
+	}
+	config.GameName = *gamePtr
+	config.SavePath = *saves
+	config.KeepSaves = *keepSaves
+
+	github.Retrieve(&config)
 }
 
 type executableArgs struct {
