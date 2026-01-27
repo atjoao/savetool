@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sqweek/dialog"
+	"github.com/atjoao/dialog"
 )
 
 const (
@@ -201,7 +201,7 @@ func Retrieve(cfg *config.CatboxConfig) int {
 		}
 
 		if outStr[0] != hostnameStr && outStr[1] == "false" {
-			choice := dialog.Message("%s", fmt.Sprintf("Files from %s weren't uploaded\nAre u okay with that?", outStr[0])).Title("Warning").YesNo()
+			choice := dialog.Message("%s", fmt.Sprintf("Files from %s weren't uploaded\nDo you want to continue?", outStr[0])).Title("Warning").YesNo()
 			if choice {
 				Delete(downloadLastOpened)
 				UploadLastFile("false")
@@ -212,12 +212,27 @@ func Retrieve(cfg *config.CatboxConfig) int {
 		}
 
 		if outStr[0] != hostnameStr && outStr[1] == "true" {
-			choice := dialog.Message("%s", fmt.Sprintf("Files from %s were uploaded\nDo you want to download them?", outStr[0])).Title("Warning").YesNo()
-			if choice {
+			choice := dialog.Message("%s", fmt.Sprintf("Files from %s were uploaded\nDo you want to download them?\n\nYES = DOWNLOAD CLOUD SAVE\nNO = USE LOCAL SAVES\nCANCEL = CLOSE", outStr[0])).Title("Warning").YesNoCancel()
+			/* if choice {
 				DownloadSaveZip()
 				Delete(downloadLastOpened)
 				UploadLastFile("false")
 			} else {
+				fmt.Println("Closing...")
+				os.Exit(0)
+			} */
+
+			switch choice {
+			case dialog.YesNoCancelYes:
+				DownloadSaveZip()
+				Delete(downloadLastOpened)
+				UploadLastFile("false")
+				break
+			case dialog.YesNoCancelNo:
+				Delete(downloadLastOpened)
+				UploadLastFile("false")
+				break
+			case dialog.YesNoCancelCancel:
 				fmt.Println("Closing...")
 				os.Exit(0)
 			}

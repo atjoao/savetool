@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sqweek/dialog"
+	"github.com/atjoao/dialog"
 )
 
 const (
@@ -240,11 +240,24 @@ func Retrieve(cfg *config.GitHubConfig) int {
 			}
 
 			if remoteHostname != hostnameStr && isUploaded == "true" {
-				choice := dialog.Message("%s", fmt.Sprintf("Files from %s were uploaded\nDo you want to download them?", remoteHostname)).Title("Warning").YesNo()
-				if choice {
+				choice := dialog.Message("%s", fmt.Sprintf("Files from %s were uploaded\nDo you want to download them?\n\nYES = DOWNLOAD CLOUD SAVE\nNO = USE LOCAL SAVES\nCANCEL = CLOSE", remoteHostname)).Title("Warning").YesNoCancel()
+				/* if choice {
 					DownloadSaveZip()
 					UploadLastFile("false")
 				} else {
+					fmt.Println("Closing...")
+					os.Exit(0)
+				} */
+
+				switch choice {
+				case dialog.YesNoCancelYes:
+					DownloadSaveZip()
+					UploadLastFile("false")
+					break
+				case dialog.YesNoCancelNo:
+					UploadLastFile("false")
+					break
+				case dialog.YesNoCancelCancel:
 					fmt.Println("Closing...")
 					os.Exit(0)
 				}
