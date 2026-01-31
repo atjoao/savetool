@@ -1,7 +1,7 @@
 github.com/TheTitanrain/w32 v0.0.0-20180517000239-4f5cfb03fabf h1:FPsprx82rdrX2jiKyS17BH6IrTmUBYqZa/CXT4uvb+I=
 github.com/TheTitanrain/w32 v0.0.0-20180517000239-4f5cfb03fabf/go.mod h1:peYoMncQljjNS6tZwI9WVyQB3qZS6u79/N3mBOcnd3I=
-github.com/atjoao/dialog v0.0.0-20260127154600-5445e0b38339 h1:jST7hf5E5rRuiibpWmN+JsPEbBrw8wzK/UzT9Mwx+8Q=
-github.com/atjoao/dialog v0.0.0-20260127154600-5445e0b38339/go.mod h1:aLEbFLASzfy+cS0zd/0F/9Lyy3Wlam8ITBv7yXKw8/g=
+github.com/atjoao/dialog v0.0.0-20260131023818-617485369cde h1:ZcsXIVyVktJgHUu34RQxbeyy0kRLMUyobzr8bhWnWfk=
+github.com/atjoao/dialog v0.0.0-20260131023818-617485369cde/go.mod h1:aLEbFLASzfy+cS0zd/0F/9Lyy3Wlam8ITBv7yXKw8/g=
 golang.org/x/sys v0.40.0 h1:DBZZqJ2Rkml6QMQsZywtnjnnGvHza6BTfYFWY9kjEWQ=
 golang.org/x/sys v0.40.0/go.mod h1:OgkHotnGiDImocRcuBABYBEXf8A9a87e/uXjp9XT3ks=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
