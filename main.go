@@ -29,7 +29,7 @@ func main() {
 	// Parse flags
 	flag.Parse()
 
-	// Get the executable and arguments from os.Args
+	// Get the executable and arguments from os.Args.
 	executableArgs := parseExecutableArgs(os.Args)
 
 	if executableArgs.executable == "" {
