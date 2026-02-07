@@ -26,7 +26,7 @@ func main() {
 	githubPtr := flag.String("github", "", "GitHub configuration: token+repo+branch (branch optional) || mandatory depending on the service chosen")
 	gamePtr := flag.String("game", "", "Game name identifier (required for github)")
 
-	// Parse flags
+	// Parse flags/
 	flag.Parse()
 
 	// Get the executable and arguments from os.Args.
