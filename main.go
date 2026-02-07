@@ -113,8 +113,23 @@ func handleGithubService(githubPtr, saves *string, keepSaves *bool, gamePtr *str
 	fmt.Println("Service: GitHub")
 	githubConfig := strings.Split(*githubPtr, "+")
 	if *gamePtr == "" {
-		fmt.Println("Game name is required")
-		os.Exit(1)
+		// check 1 : env variable
+		osEnvGameId := os.Getenv("SteamGameId")
+		if osEnvGameId == "" {
+			osEnvGameId = os.Getenv("SteamAppId")
+		}
+
+		// check 2 : still empty
+		if osEnvGameId == "" {
+			fmt.Println("Game name is required (-game=\"\")")
+			os.Exit(1)
+		}
+
+		// use env
+		if osEnvGameId != "" {
+			fmt.Println("Using gameid from environment variable:", osEnvGameId)
+			*gamePtr = osEnvGameId
+		}
 	}
 	if len(githubConfig) < 2 || len(githubConfig) > 3 {
 		fmt.Println("Invalid GitHub configuration")

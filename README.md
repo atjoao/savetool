@@ -12,13 +12,14 @@ Exemplo catbox
 
 Exemplo github
     ```
-    savetool -game "<nome do jogo>" -service github -github <token>+<user/repo>+(branch) -saves "<pasta de save do jogo>" -kp=<true|false> -- %COMMAND%
+    savetool (-game "<nome do jogo>") -service github -github <token>+<user/repo>+(branch) -saves "<pasta de save do jogo>" -kp=<true|false> -- %COMMAND%
     ```
 
 - () > opcional
 - -kp default = `true`
 
 - Este tem de ficar em ordem de acordo com o exemplo para prevenir erros
+- game flag é opcional SE EXISITR SteamAppId ou SteamGameId em variaveis do processo (por norma existe se for iniciado pela Steam)
 
 # Args
 
