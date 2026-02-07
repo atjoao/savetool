@@ -103,8 +103,7 @@ func handleCatboxService(catboxPtr, saves *string, keepSaves *bool) {
 	config.AlbumID = catboxConfig[1]
 	config.SavePath = *saves
 	config.KeepSaves = *keepSaves
-	// 0 = error
-	// 1 = new files
+
 	catbox.Retrieve(&config)
 }
 
@@ -113,23 +112,16 @@ func handleGithubService(githubPtr, saves *string, keepSaves *bool, gamePtr *str
 	fmt.Println("Service: GitHub")
 	githubConfig := strings.Split(*githubPtr, "+")
 	if *gamePtr == "" {
-		// check 1 : env variable
 		osEnvGameId := os.Getenv("SteamGameId")
 		if osEnvGameId == "" {
 			osEnvGameId = os.Getenv("SteamAppId")
 		}
-
-		// check 2 : still empty
 		if osEnvGameId == "" {
 			fmt.Println("Game name is required (-game=\"\")")
 			os.Exit(1)
 		}
-
-		// use env
-		if osEnvGameId != "" {
-			fmt.Println("Using gameid from environment variable:", osEnvGameId)
-			*gamePtr = osEnvGameId
-		}
+		fmt.Println("Using gameid from environment variable:", osEnvGameId)
+		*gamePtr = osEnvGameId
 	}
 	if len(githubConfig) < 2 || len(githubConfig) > 3 {
 		fmt.Println("Invalid GitHub configuration")
