@@ -64,6 +64,6 @@ No final terás `-catbox userhash+xxxxxx`
 
 # Notas sobre link2ea:// protocol
 
-Este protocolo é para ser usado com [link2ea](https://github.com/atjoao/Link2EA)
-Eu não sei como funciona o oficial, nem testei com o oficial.
+Este protocolo é para ser usado com [link2ea](https://github.com/atjoao/Link2EA)\
+Eu não sei como funciona o oficial, nem testei com o oficial.\
 Por isso não é meu problema (este é apenas para windows, se estiver certo, no linux vai iniciar debaixo do wine/proton por isso prosseguirá normalmente)
