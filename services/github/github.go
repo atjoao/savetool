@@ -260,6 +260,7 @@ func Retrieve(cfg *config.GitHubConfig) int {
 				case dialog.YesNoCancelCancel:
 					fmt.Println("Closing...")
 					os.Exit(0)
+					break
 				}
 			}
 		}

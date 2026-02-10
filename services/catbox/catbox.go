@@ -235,6 +235,7 @@ func Retrieve(cfg *config.CatboxConfig) int {
 			case dialog.YesNoCancelCancel:
 				fmt.Println("Closing...")
 				os.Exit(0)
+				break
 			}
 		}
 
