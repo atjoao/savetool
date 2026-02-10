@@ -227,15 +227,12 @@ func Retrieve(cfg *config.CatboxConfig) int {
 				DownloadSaveZip()
 				Delete(downloadLastOpened)
 				UploadLastFile("false")
-				break
 			case dialog.YesNoCancelNo:
 				Delete(downloadLastOpened)
 				UploadLastFile("false")
-				break
-			case dialog.YesNoCancelCancel:
+			default:
 				fmt.Println("Closing...")
 				os.Exit(0)
-				break
 			}
 		}
 

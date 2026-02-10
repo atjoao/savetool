@@ -253,14 +253,11 @@ func Retrieve(cfg *config.GitHubConfig) int {
 				case dialog.YesNoCancelYes:
 					DownloadSaveZip()
 					UploadLastFile("false")
-					break
 				case dialog.YesNoCancelNo:
 					UploadLastFile("false")
-					break
-				case dialog.YesNoCancelCancel:
+				default:
 					fmt.Println("Closing...")
 					os.Exit(0)
-					break
 				}
 			}
 		}
