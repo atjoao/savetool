@@ -41,11 +41,10 @@ func init() {
 }
 
 type GitHubFileResponse struct {
-	Name    string `json:"name"`
-	Path    string `json:"path"`
-	SHA     string `json:"sha"`
-	Content string `json:"content"`
-	Message string `json:"message"`
+	Name        string `json:"name"`
+	Path        string `json:"path"`
+	SHA         string `json:"sha"`
+	DownloadURL string `json:"download_url"`
 }
 
 type GitHubCommitRequest struct {
@@ -157,12 +156,17 @@ func downloadFile(filePath string) ([]byte, error) {
 		return nil, err
 	}
 
-	decoded, err := base64.StdEncoding.DecodeString(strings.ReplaceAll(fileResp.Content, "\n", ""))
+	download_url := fileResp.DownloadURL
+	downloadResp, err := http.Get(download_url)
 	if err != nil {
-		return nil, fmt.Errorf("error decoding content: %w", err)
+		return nil, err
+	}
+	defer downloadResp.Body.Close()
+	if downloadResp.StatusCode != 200 {
+		return nil, fmt.Errorf("download failed with status %d", downloadResp.StatusCode)
 	}
 
-	return decoded, nil
+	return io.ReadAll(downloadResp.Body)
 }
 
 func getGamePath() string {
