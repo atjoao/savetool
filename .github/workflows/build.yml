@@ -30,18 +30,15 @@ jobs:
     - name: Cache APT packages
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
-        packages: build-essential libgtk-3-dev
-
-    - name: Setup Zig
-      uses: mlugg/setup-zig@v2
+        packages: build-essential libgtk-3-dev mingw-w64 clang lld
 
     - name: Build project for Windows x86_64
       run: |
-        GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC="zig cc -target x86_64-windows-gnu" go build -ldflags="-s -w -H=windowsgui" -o ./bin/win-64/savetool.exe
+        GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC="clang --target=x86_64-w64-mingw32 -O3" go build -trimpath -ldflags="-s -w -H=windowsgui -extldflags '-fuse-ld=lld'" -o ./bin/win-64/savetool.exe
 
     - name: Build project for Linux x86_64
       run: |
-        GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -ldflags="-s -w" -o ./bin/linux-64/savetool
+        GOOS=linux GOARCH=amd64 CGO_ENABLED=1 CC="clang -O3" go build -trimpath -ldflags="-s -w -extldflags '-fuse-ld=lld'" -o ./bin/linux-64/savetool
 
     - name: Upload Linux x86_64 binary
       uses: actions/upload-artifact@v4
