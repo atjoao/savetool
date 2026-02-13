@@ -177,8 +177,16 @@ func startProcess(executablePath string, args []string) {
 		}
 	}
 
+	// add support for bat later
+	ext := filepath.Ext(executablePath) // ex: "/run/media/deck/1e11bb10-ea8d-4b2d-abbf-73fdbecbdd54/Emulation/tools/launchers/citron.sh"
+	if ext == ".sh" {
+		fmt.Println("Shell script detected, executing under /bin/sh")
+		args = append([]string{executablePath}, args...)
+		executablePath = "/bin/sh"
+	}
+
 	env := os.Environ()
-	proc, err := os.StartProcess(executablePath, append([]string{executablePath}, args...), &os.ProcAttr{
+	proc, err := os.StartProcess(executablePath, args, &os.ProcAttr{
 		Env: env,
 		Files: []*os.File{
 			os.Stdin,
