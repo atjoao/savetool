@@ -186,7 +186,7 @@ func startProcess(executablePath string, args []string) {
 	}
 
 	env := os.Environ()
-	proc, err := os.StartProcess(executablePath, args, &os.ProcAttr{
+	proc, err := os.StartProcess(executablePath, append([]string{executablePath}, args...), &os.ProcAttr{
 		Env: env,
 		Files: []*os.File{
 			os.Stdin,
