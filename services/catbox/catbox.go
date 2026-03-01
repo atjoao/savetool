@@ -23,6 +23,7 @@ const (
 )
 
 var (
+	uniqueId           string
 	userhash           string
 	albumID            string
 	hostnameStr        string
@@ -33,12 +34,18 @@ var (
 )
 
 func init() {
+	uniqueid, err := helper.GetMachineID()
+	if err != nil {
+		panic("Error in getting uniqueId, or resorting to hostname : " + err.Error())
+	}
+
 	hostname, err := os.Hostname()
 	if err != nil {
 		panic("Error getting hostname: " + err.Error())
 	}
 
 	hostnameStr = hostname
+	uniqueId = uniqueid
 }
 
 func requestHandler(req *http.Request) ([]byte, error) {
@@ -70,7 +77,7 @@ func UploadLastFile(uploaded string) {
 		return
 	}
 
-	_, err = io.Copy(part, strings.NewReader(hostnameStr+"+"+uploaded+"+"+fmt.Sprintf("%d", time.Now().Unix())))
+	_, err = io.Copy(part, strings.NewReader(uniqueId+"+"+hostnameStr+"+"+uploaded+"+"+fmt.Sprintf("%d", time.Now().Unix())))
 	if err != nil {
 		fmt.Println("Error copying file content:", err)
 		return
@@ -191,17 +198,18 @@ func Retrieve(cfg *config.CatboxConfig) int {
 		fmt.Println("Last time executed:", string(out))
 
 		outStr := strings.Split(string(out), "+")
-		fmt.Println("Hostname:", outStr[0])
-		fmt.Println("Is uploaded: ", outStr[1])
+		fmt.Println("Unique ID: ", outStr[0])
+		fmt.Println("Hostname:", outStr[1])
+		fmt.Println("Is uploaded: ", outStr[2])
 
-		if outStr[0] == hostnameStr {
+		if outStr[1] == hostnameStr && outStr[0] != uniqueId {
 			Delete(downloadLastOpened)
 			UploadLastFile("false")
 			return 1
 		}
 
-		if outStr[0] != hostnameStr && outStr[1] == "false" {
-			choice := dialog.Message("%s", fmt.Sprintf("Files from %s weren't uploaded\nDo you want to continue?", outStr[0])).Title("Warning").YesNo()
+		if outStr[1] != hostnameStr && outStr[2] == "false" && outStr[0] != uniqueId {
+			choice := dialog.Message("%s", fmt.Sprintf("Files from %s weren't uploaded\nDo you want to continue?", outStr[1])).Title("Warning").YesNo()
 			if choice {
 				Delete(downloadLastOpened)
 				UploadLastFile("false")
@@ -211,8 +219,8 @@ func Retrieve(cfg *config.CatboxConfig) int {
 			}
 		}
 
-		if outStr[0] != hostnameStr && outStr[1] == "true" {
-			choice := dialog.Message("%s", fmt.Sprintf("Files from %s were uploaded\nDo you want to download them?\n\nYES = DOWNLOAD CLOUD SAVE\nNO = USE LOCAL SAVES\nCANCEL = CLOSE", outStr[0])).Title("Warning").YesNoCancel()
+		if outStr[1] != hostnameStr && outStr[2] == "true" && outStr[0] != uniqueId {
+			choice := dialog.Message("%s", fmt.Sprintf("Files from %s were uploaded\nDo you want to download them?\n\nYES = DOWNLOAD CLOUD SAVE\nNO = USE LOCAL SAVES\nCANCEL = CLOSE", outStr[1])).Title("Warning").YesNoCancel()
 			/* if choice {
 				DownloadSaveZip()
 				Delete(downloadLastOpened)

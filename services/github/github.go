@@ -23,6 +23,7 @@ const (
 )
 
 var (
+	uniqueId    string
 	token       string
 	repo        string
 	branch      string
@@ -33,11 +34,18 @@ var (
 )
 
 func init() {
+	uniqueid, err := helper.GetMachineID()
+	if err != nil {
+		panic("Error in getting uniqueId, or resorting to hostname : " + err.Error())
+	}
+
 	hostname, err := os.Hostname()
 	if err != nil {
 		panic("Error getting hostname: " + err.Error())
 	}
+
 	hostnameStr = hostname
+	uniqueId = uniqueid
 }
 
 type GitHubFileResponse struct {
@@ -174,7 +182,7 @@ func getGamePath() string {
 }
 
 func UploadLastFile(uploaded string) {
-	content := fmt.Sprintf("%s+%s+%d", hostnameStr, uploaded, time.Now().Unix())
+	content := fmt.Sprintf("%s+%s+%s+%d", uniqueId, hostnameStr, uploaded, time.Now().Unix())
 	filePath := getGamePath() + "/.lastopened"
 
 	err := uploadFile(filePath, []byte(content), fmt.Sprintf("Update .lastopened for %s", gameName))
@@ -222,18 +230,20 @@ func Retrieve(cfg *config.GitHubConfig) int {
 
 		parts := strings.Split(string(lastOpenedContent), "+")
 		if len(parts) >= 2 {
-			remoteHostname := parts[0]
-			isUploaded := parts[1]
+			machineId := parts[0]
+			remoteHostname := parts[1]
+			isUploaded := parts[2]
 
+			fmt.Println("Unique ID:", remoteHostname)
 			fmt.Println("Hostname:", remoteHostname)
 			fmt.Println("Is uploaded:", isUploaded)
 
-			if remoteHostname == hostnameStr {
+			if machineId != uniqueId && remoteHostname == hostnameStr {
 				UploadLastFile("false")
 				return 1
 			}
 
-			if remoteHostname != hostnameStr && isUploaded == "false" {
+			if machineId != uniqueId && remoteHostname != hostnameStr && isUploaded == "false" {
 				choice := dialog.Message("%s", fmt.Sprintf("Files from %s weren't uploaded\nAre you okay with that?", remoteHostname)).Title("Warning").YesNo()
 				if choice {
 					UploadLastFile("false")
@@ -243,7 +253,7 @@ func Retrieve(cfg *config.GitHubConfig) int {
 				}
 			}
 
-			if remoteHostname != hostnameStr && isUploaded == "true" {
+			if remoteHostname != hostnameStr && isUploaded == "true" && machineId != uniqueId {
 				choice := dialog.Message("%s", fmt.Sprintf("Files from %s were uploaded\nDo you want to download them?\n\nYES = DOWNLOAD CLOUD SAVE\nNO = USE LOCAL SAVES\nCANCEL = CLOSE", remoteHostname)).Title("Warning").YesNoCancel()
 				/* if choice {
 					DownloadSaveZip()
