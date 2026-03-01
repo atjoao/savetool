@@ -229,14 +229,17 @@ func Retrieve(cfg *config.GitHubConfig) int {
 		fmt.Println("Last time executed:", string(lastOpenedContent))
 
 		parts := strings.Split(string(lastOpenedContent), "+")
-		if len(parts) >= 2 {
+		if len(parts) >= 3 {
 			machineId := parts[0]
 			remoteHostname := parts[1]
 			isUploaded := parts[2]
 
-			fmt.Println("Unique ID:", remoteHostname)
+			fmt.Println("Unique ID:", machineId)
 			fmt.Println("Hostname:", remoteHostname)
 			fmt.Println("Is uploaded:", isUploaded)
+			if len(parts) >= 4 {
+				fmt.Println("Timestamp:", parts[3])
+			}
 
 			if machineId != uniqueId && remoteHostname == hostnameStr {
 				UploadLastFile("false")

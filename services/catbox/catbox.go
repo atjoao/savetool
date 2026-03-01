@@ -198,52 +198,56 @@ func Retrieve(cfg *config.CatboxConfig) int {
 		fmt.Println("Last time executed:", string(out))
 
 		outStr := strings.Split(string(out), "+")
-		fmt.Println("Unique ID: ", outStr[0])
-		fmt.Println("Hostname:", outStr[1])
-		fmt.Println("Is uploaded: ", outStr[2])
+		if len(outStr) >= 3 {
+			fmt.Println("Unique ID: ", outStr[0])
+			fmt.Println("Hostname:", outStr[1])
+			fmt.Println("Is uploaded: ", outStr[2])
+			if len(outStr) >= 4 {
+				fmt.Println("Timestamp:", outStr[3])
+			}
 
-		if outStr[1] == hostnameStr && outStr[0] != uniqueId {
-			Delete(downloadLastOpened)
-			UploadLastFile("false")
-			return 1
-		}
-
-		if outStr[1] != hostnameStr && outStr[2] == "false" && outStr[0] != uniqueId {
-			choice := dialog.Message("%s", fmt.Sprintf("Files from %s weren't uploaded\nDo you want to continue?", outStr[1])).Title("Warning").YesNo()
-			if choice {
+			if outStr[1] == hostnameStr && outStr[0] != uniqueId {
 				Delete(downloadLastOpened)
 				UploadLastFile("false")
-			} else {
-				fmt.Println("Closing...")
-				os.Exit(0)
+				return 1
+			}
+
+			if outStr[1] != hostnameStr && outStr[2] == "false" && outStr[0] != uniqueId {
+				choice := dialog.Message("%s", fmt.Sprintf("Files from %s weren't uploaded\nDo you want to continue?", outStr[1])).Title("Warning").YesNo()
+				if choice {
+					Delete(downloadLastOpened)
+					UploadLastFile("false")
+				} else {
+					fmt.Println("Closing...")
+					os.Exit(0)
+				}
+			}
+
+			if outStr[1] != hostnameStr && outStr[2] == "true" && outStr[0] != uniqueId {
+				choice := dialog.Message("%s", fmt.Sprintf("Files from %s were uploaded\nDo you want to download them?\n\nYES = DOWNLOAD CLOUD SAVE\nNO = USE LOCAL SAVES\nCANCEL = CLOSE", outStr[1])).Title("Warning").YesNoCancel()
+				/* if choice {
+					DownloadSaveZip()
+					Delete(downloadLastOpened)
+					UploadLastFile("false")
+				} else {
+					fmt.Println("Closing...")
+					os.Exit(0)
+				} */
+
+				switch choice {
+				case dialog.YesNoCancelYes:
+					DownloadSaveZip()
+					Delete(downloadLastOpened)
+					UploadLastFile("false")
+				case dialog.YesNoCancelNo:
+					Delete(downloadLastOpened)
+					UploadLastFile("false")
+				default:
+					fmt.Println("Closing...")
+					os.Exit(0)
+				}
 			}
 		}
-
-		if outStr[1] != hostnameStr && outStr[2] == "true" && outStr[0] != uniqueId {
-			choice := dialog.Message("%s", fmt.Sprintf("Files from %s were uploaded\nDo you want to download them?\n\nYES = DOWNLOAD CLOUD SAVE\nNO = USE LOCAL SAVES\nCANCEL = CLOSE", outStr[1])).Title("Warning").YesNoCancel()
-			/* if choice {
-				DownloadSaveZip()
-				Delete(downloadLastOpened)
-				UploadLastFile("false")
-			} else {
-				fmt.Println("Closing...")
-				os.Exit(0)
-			} */
-
-			switch choice {
-			case dialog.YesNoCancelYes:
-				DownloadSaveZip()
-				Delete(downloadLastOpened)
-				UploadLastFile("false")
-			case dialog.YesNoCancelNo:
-				Delete(downloadLastOpened)
-				UploadLastFile("false")
-			default:
-				fmt.Println("Closing...")
-				os.Exit(0)
-			}
-		}
-
 	}
 
 	return 1
