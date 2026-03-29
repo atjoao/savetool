@@ -213,7 +213,7 @@ func Retrieve(cfg *config.CatboxConfig) int {
 			}
 
 			if outStr[1] != hostnameStr && outStr[2] == "false" && outStr[0] != uniqueId {
-				choice := dialog.Message("%s", fmt.Sprintf("Files from %s weren't uploaded\nDo you want to continue?", outStr[1])).Title("Warning").YesNo()
+				choice := dialog.Message("%s", fmt.Sprintf("Files from %s were not uploaded\nCLICKING YES WILL USE YOUR LOCAL SAVE", outStr[1])).Title("Warning").YesNo()
 				if choice {
 					Delete(downloadLastOpened)
 					UploadLastFile("false")

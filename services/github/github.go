@@ -71,6 +71,8 @@ func apiRequest(method, endpoint string, body io.Reader) (*http.Response, error)
 
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("Cache-Control", "no-cache")
+	req.Header.Set("Pragma", "no-cache")
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
@@ -247,7 +249,7 @@ func Retrieve(cfg *config.GitHubConfig) int {
 			}
 
 			if machineId != uniqueId && remoteHostname != hostnameStr && isUploaded == "false" {
-				choice := dialog.Message("%s", fmt.Sprintf("Files from %s weren't uploaded\nAre you okay with that?", remoteHostname)).Title("Warning").YesNo()
+				choice := dialog.Message("%s", fmt.Sprintf("Files from %s were not uploaded\nCLICKING YES WILL USE YOUR LOCAL SAVE", remoteHostname)).Title("Warning").YesNo()
 				if choice {
 					UploadLastFile("false")
 				} else {
