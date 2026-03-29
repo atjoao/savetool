@@ -241,7 +241,7 @@ func Retrieve(cfg *config.GitHubConfig) int {
 				fmt.Println("Timestamp:", parts[3])
 			}
 
-			if machineId != uniqueId && remoteHostname == hostnameStr {
+			if machineId == uniqueId && remoteHostname == hostnameStr {
 				UploadLastFile("false")
 				return 1
 			}

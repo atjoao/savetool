@@ -206,7 +206,7 @@ func Retrieve(cfg *config.CatboxConfig) int {
 				fmt.Println("Timestamp:", outStr[3])
 			}
 
-			if outStr[1] == hostnameStr && outStr[0] != uniqueId {
+			if outStr[1] == hostnameStr && outStr[0] == uniqueId {
 				Delete(downloadLastOpened)
 				UploadLastFile("false")
 				return 1
