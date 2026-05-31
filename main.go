@@ -19,6 +19,7 @@ func main() {
 	logFile := filepath.Join(workDir, "savetool.log")
 
 	// Define flags
+	elevate := flag.Bool("elevate", false, "Request Administrator privileges on Windows")
 	saves := flag.String("saves", "", "Path to the saves folder")
 	service := flag.String("service", "", "Service name (github / catbox)")
 	keepSaves := flag.Bool("kp", true, "Keep saves stored in game directory - game_dir/saves/<timestamp>.zip")
@@ -28,6 +29,10 @@ func main() {
 
 	// Parse flags/
 	flag.Parse()
+
+	if *elevate {
+		helper.CheckAndElevate()
+	}
 
 	// Get the executable and arguments from os.Args.
 	executableArgs := parseExecutableArgs(os.Args)
