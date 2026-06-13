@@ -74,10 +74,24 @@ func main() {
 
 	executablePath, args := executableArgs.executable, executableArgs.args
 
+	// Resolve Link2EA protocol if needed
+	parsedUrl, _ := url.Parse(executablePath)
+	if parsedUrl.Scheme == "link2ea" {
+		fmt.Println("Link2EA protocol")
+		if runtime.GOOS == "windows" {
+			executablePath, args = helper.ParseLinkToEA(parsedUrl)
+			fmt.Println("Resolved Link2EA executable path:", executablePath)
+			fmt.Println("Arguments:", args)
+		} else {
+			fmt.Println("Link2EA protocol is only supported on Windows")
+			os.Exit(1)
+		}
+	}
+
 	fmt.Println("Starting process:", executablePath)
 	fmt.Println("Arguments:", args)
 
-	startProcess(executablePath, args)
+	helper.StartProcess(executablePath, args)
 
 	// Compress and then upload
 	switch *service {
@@ -166,44 +180,4 @@ func parseExecutableArgs(args []string) executableArgs {
 		}
 	}
 	return execArgs
-}
-
-func startProcess(executablePath string, args []string) {
-	url, _ := url.Parse(executablePath)
-	if url.Scheme == "link2ea" {
-		fmt.Println("Link2EA protocol")
-		if runtime.GOOS == "windows" {
-			executablePath, args = helper.ParseLinkToEA(url)
-			fmt.Println("Resolved Link2EA executable path:", executablePath)
-			fmt.Println("Arguments:", args)
-		} else {
-			fmt.Println("Link2EA protocol is only supported on Windows")
-			os.Exit(1)
-		}
-	}
-
-	// add support for bat later (i dont need this steam launches reaper so yeah)
-	/* ext := filepath.Ext(executablePath) // ex: "/run/media/deck/1e11bb10-ea8d-4b2d-abbf-73fdbecbdd54/Emulation/tools/launchers/citron.sh"
-	if ext == ".sh" {
-		fmt.Println("Shell script detected, executing under /bin/sh")
-		args = append([]string{executablePath}, args...)
-		executablePath = "/bin/sh"
-	} */
-
-	env := os.Environ()
-	proc, err := os.StartProcess(executablePath, append([]string{executablePath}, args...), &os.ProcAttr{
-		Env: env,
-		Files: []*os.File{
-			os.Stdin,
-			os.Stdout,
-			os.Stderr,
-		},
-	})
-
-	if err != nil {
-		fmt.Println("Error starting process:", err)
-		os.Exit(1)
-	}
-
-	proc.Wait()
 }
